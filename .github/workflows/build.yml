@@ -1,0 +1,21 @@
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - run: make
+    - uses: actions/upload-artifact@v2
+      with: {name: build, path: build}
+    - uses: actions/upload-artifact@v2
+      with: {name: Output, path: Algorithm/Output}
+    - uses: marvinpinto/action-automatic-releases@latest
+      if: github.ref == 'refs/heads/main'
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: latest
+        files: |
+          LICENSE
+          assignment1.py
+          build/*
+          Algorithm/Output/*
