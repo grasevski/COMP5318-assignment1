@@ -6,7 +6,7 @@ import json
 import numpy as np
 import pandas as pd
 from typing import Tuple
-from skimage.feature import hog
+from skimage.feature import hog, local_binary_pattern
 from sklearn.ensemble import AdaBoostClassifier, BaggingClassifier
 from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import accuracy_score
@@ -14,6 +14,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import normalize
+from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
 
@@ -32,44 +33,18 @@ def load_data() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
 
 def preprocess(X: np.ndarray) -> np.ndarray:
     """Do data cleaning, feature extraction etc."""
-    features = [hog(x.reshape(28, 28)) for x in X]
-    return np.array(features)
-    features = [
-        hog(x.reshape(28, 28),
-            orientations=8,
-            pixels_per_cell=(4, 4),
-            cells_per_block=(3, 3),
-            block_norm='L1-sqrt') for x in X
-    ]
-    return np.concatenate((normalize(X), np.array(features)), axis=1)
+    return np.array([
+        np.concatenate((hog(x.reshape(28, 28),
+                            pixels_per_cell=(4, 4),
+                            cells_per_block=(2, 2)),
+                        local_binary_pattern(x.reshape(28, 28), 8, 1,
+                                             'uniform').flatten())) for x in X
+    ])
 
 
 # Define all the ML algorithms to compare.
 ALGORITHMS = {
-    'Naive Bayes': (GaussianNB(), {}),
-    'SGD': (SGDClassifier(penalty='elasticnet', n_jobs=-1, random_state=0), {
-        'loss': ['hinge', 'log'],
-        'l1_ratio': [0, 0.15, 0.5, 1],
-        'class_weight': [None, 'balanced']
-    }),
-    'Decision Tree': (DecisionTreeClassifier(random_state=0), {
-        'criterion': ['gini', 'entropy'],
-        'splitter': ['best', 'random'],
-        'ccp_alpha': [0, 0.001, 0.01, 0.1]
-    }),
-    'Nearest Neighbor': (KNeighborsClassifier(n_jobs=-1), {
-        'n_neighbors': [1, 2, 3, 4],
-        'weights': ['uniform', 'distance'],
-        'p': [1, 2]
-    }),
-    'Bagging': (BaggingClassifier(random_state=0, n_jobs=-1), {
-        'n_estimators': [1, 2, 4, 8, 16, 32, 64, 128],
-        'max_samples': [0.25, 0.5]
-    }),
-    'Ada Boost': (AdaBoostClassifier(random_state=0), {
-        'n_estimators': [1, 2, 4, 8, 16, 32, 64, 128],
-        'learning_rate': [0.1, 1]
-    }),
+    'SVM': (SVC(C=10, random_state=0), {}),
 }
 
 # Load and preprocess the data.
