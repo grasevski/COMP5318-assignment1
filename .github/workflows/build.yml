@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - run: apt-get -y install texlive
+    - run: apt -y install texlive
     - run: pip3 install -r requirements.txt
     - run: make
     - uses: actions/upload-artifact@v2
