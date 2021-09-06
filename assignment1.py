@@ -45,38 +45,33 @@ def preprocess(X: np.ndarray) -> np.ndarray:
 
 # Define all the ML algorithms to compare.
 ALGORITHMS = {
-    # 'Nearest Neighbor': (KNeighborsClassifier(n_jobs=-1), {}),
-    # 'SGD': (SGDClassifier(n_jobs=-1, random_state=0), {}),
-    # 'SVM': (SVC(random_state=0), {}),
-    # 'SGD': (SGDClassifier(random_state=0), {
-    #     'loss': ['hinge', 'log'],
-    #     'penalty': ['l2', 'l1'],
-    #     'alpha': [0.0001, 0.001, 0.01, 0.1]
-    # }),
+    'Nearest Neighbor': (KNeighborsClassifier(n_jobs=-1), {
+        'weights': ['uniform', 'distance'],
+        'p': [1, 2],
+        'n_neighbors': [1, 2, 3, 4],
+    }),
+    'SGD': (SGDClassifier(penalty='elasticnet', n_jobs=-1, random_state=0), {
+        'loss': ['hinge', 'log'],
+        'l1_ratio': [0, 0.15, 0.5, 1],
+        'class_weight': [None, 'balanced']
+    }),
     'Naive Bayes': (GaussianNB(), {}),
+    'Decision Tree': (DecisionTreeClassifier(random_state=0), {
+        'criterion': ['gini', 'entropy'],
+        'splitter': ['best', 'random'],
+        'ccp_alpha': [0, 0.001, 0.01, 0.1]
+    }),
+    'Bagging': (BaggingClassifier(random_state=0, n_jobs=-1), {
+        'n_estimators': [1, 2, 4, 8],
+        'bootstrap': [False, True],
+        'bootstrap_features': [False, True]
+    }),
+    'Ada Boost': (AdaBoostClassifier(random_state=0), {
+        'n_estimators': [1, 2, 4, 8],
+        'learning_rate': [0.1, 1],
+        'algorithm': ['SAMME', 'SAMME.R']
+    }),
 }
-
-# ALGORITHMS = {
-#     'Nearest Neighbor': (KNeighborsClassifier(n_jobs=-1), {}),
-#     'Logistic Regression': (LogisticRegression(random_state=0,
-# solver='saga', n_jobs=-1), {}),
-#     'Naive Bayes': (GaussianNB(), {}),
-#     'Decision Tree': (DecisionTreeClassifier(random_state=0), {
-#         'criterion': ['gini', 'entropy'],
-#         'splitter': ['best', 'random'],
-#         'ccp_alpha': [0, 0.001, 0.01, 0.1]
-#     }),
-#     'Bagging': (BaggingClassifier(n_estimators=16, n_jobs=-1,
-#                                   random_state=0), {}),
-#     'Ada Boost': (AdaBoostClassifier(random_state=0), {
-#         'n_estimators': [1, 2, 4, 8, 16, 32, 64, 128],
-#         'learning_rate': [0.1, 1]
-#     }),
-#     'SVM': (LinearSVC(random_state=0), {
-#         'penalty': ['l1', 'l2'],
-#         'C': [1e-3, 1e-2, 1e-1, 1e0, 1e1, 1e2, 1e3, 1e4]
-#     }),
-# }
 
 # Load and preprocess the data.
 X_train, y_train, X_test, y_test_2000 = load_data()
