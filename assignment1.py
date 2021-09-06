@@ -8,13 +8,11 @@ import pandas as pd
 from typing import Tuple
 from skimage.feature import hog
 from sklearn.ensemble import AdaBoostClassifier, BaggingClassifier
-from sklearn.linear_model import LogisticRegression, SGDClassifier
+from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import GridSearchCV
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.preprocessing import normalize
-from sklearn.svm import LinearSVC, SVC
 from sklearn.tree import DecisionTreeClassifier
 
 
@@ -45,11 +43,6 @@ def preprocess(X: np.ndarray) -> np.ndarray:
 
 # Define all the ML algorithms to compare.
 ALGORITHMS = {
-    'Nearest Neighbor': (KNeighborsClassifier(n_jobs=-1), {
-        'weights': ['uniform', 'distance'],
-        'p': [1, 2],
-        'n_neighbors': [1, 2, 3, 4],
-    }),
     'SGD': (SGDClassifier(penalty='elasticnet', n_jobs=-1, random_state=0), {
         'loss': ['hinge', 'log'],
         'l1_ratio': [0, 0.15, 0.5, 1],
