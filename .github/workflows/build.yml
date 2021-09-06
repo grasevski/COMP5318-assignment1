@@ -3,8 +3,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+    - run: sudo apt-get -y install texlive
     - uses: actions/checkout@v2
-    - run: apt-get -y install texlive
     - run: pip3 install -r requirements.txt
     - run: make
     - uses: actions/upload-artifact@v2
