@@ -10,7 +10,7 @@ build/results.log: assignment1.py build
 	./assignment1.py | tee $@
 
 build/$(STUDENTID)_code.ipynb.pdf: build/$(STUDENTID)_code.ipynb
-	jupyter nbconvert --output $(notdir $@) --to pdf $<
+	jupyter-nbconvert --output $(notdir $@) --to pdf $<
 
 build/$(STUDENTID)_code.ipynb: assignment1.py build
 	yapf -d $<
