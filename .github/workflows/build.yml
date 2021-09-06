@@ -1,9 +1,12 @@
 on: push
 jobs:
   build:
+    container: 'alpine:3.13'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - run: apt-get -y install texlive
+    - run: pip3 install -r requirements.txt
     - run: make
     - uses: actions/upload-artifact@v2
       with: {name: build, path: build}

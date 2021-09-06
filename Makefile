@@ -4,25 +4,21 @@ build/$(STUDENTID)_report.pdf: build/$(STUDENTID)_code.ipynb.pdf build/results.l
 	cd report && pdflatex --synctex=1 report.tex && biber report && pdflatex --synctex=1 report.tex && pdflatex --synctex=1 report.tex
 	cp report/report.pdf $@
 
-build/results.log: assignment1.py venv build
+build/results.log: assignment1.py build
 	mkdir -p Algorithm/Output
 	cd Algorithm && tar xf ../Input.tar.xz
-	venv/bin/python assignment1.py | tee $@
+	./assignment1.py | tee $@
 
 build/$(STUDENTID)_code.ipynb.pdf: build/$(STUDENTID)_code.ipynb
-	venv/bin/jupyter nbconvert --output $(notdir $@) --to pdf $<
+	jupyter nbconvert --output $(notdir $@) --to pdf $<
 
-build/$(STUDENTID)_code.ipynb: assignment1.py venv build
-	venv/bin/yapf -d $<
-	venv/bin/pycodestyle $<
-	venv/bin/jupytext --output $@ $<
+build/$(STUDENTID)_code.ipynb: assignment1.py build
+	yapf -d $<
+	pycodestyle $<
+	jupytext --output $@ $<
 
 build:
 	mkdir $@
 
-venv: requirements.txt
-	virtualenv $@
-	venv/bin/pip install -r $<
-
 clean:
-	rm -rf Algorithm build/* venv
+	rm -rf Algorithm build/*
