@@ -12,6 +12,7 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import GridSearchCV
 from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import normalize
 from sklearn.tree import DecisionTreeClassifier
 
@@ -31,6 +32,8 @@ def load_data() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
 
 def preprocess(X: np.ndarray) -> np.ndarray:
     """Do data cleaning, feature extraction etc."""
+    features = [hog(x.reshape(28, 28)) for x in X]
+    return np.array(features)
     features = [
         hog(x.reshape(28, 28),
             orientations=8,
@@ -43,26 +46,29 @@ def preprocess(X: np.ndarray) -> np.ndarray:
 
 # Define all the ML algorithms to compare.
 ALGORITHMS = {
+    'Naive Bayes': (GaussianNB(), {}),
     'SGD': (SGDClassifier(penalty='elasticnet', n_jobs=-1, random_state=0), {
         'loss': ['hinge', 'log'],
         'l1_ratio': [0, 0.15, 0.5, 1],
         'class_weight': [None, 'balanced']
     }),
-    'Naive Bayes': (GaussianNB(), {}),
     'Decision Tree': (DecisionTreeClassifier(random_state=0), {
         'criterion': ['gini', 'entropy'],
         'splitter': ['best', 'random'],
         'ccp_alpha': [0, 0.001, 0.01, 0.1]
     }),
+    'Nearest Neighbor': (KNeighborsClassifier(n_jobs=-1), {
+        'n_neighbors': [1, 2, 3, 4],
+        'weights': ['uniform', 'distance'],
+        'p': [1, 2]
+    }),
     'Bagging': (BaggingClassifier(random_state=0, n_jobs=-1), {
-        'n_estimators': [1, 2, 4, 8],
-        'bootstrap': [False, True],
-        'bootstrap_features': [False, True]
+        'n_estimators': [1, 2, 4, 8, 16, 32, 64, 128],
+        'max_samples': [0.25, 0.5]
     }),
     'Ada Boost': (AdaBoostClassifier(random_state=0), {
-        'n_estimators': [1, 2, 4, 8],
-        'learning_rate': [0.1, 1],
-        'algorithm': ['SAMME', 'SAMME.R']
+        'n_estimators': [1, 2, 4, 8, 16, 32, 64, 128],
+        'learning_rate': [0.1, 1]
     }),
 }
 
@@ -78,16 +84,16 @@ for name, (algorithm, param_grid) in ALGORITHMS.items():
                          n_jobs=-1,
                          cv=10)
     model.fit(X_train, y_train)
-    print(
-        json.dumps({
-            'ts': str(datetime.now()),
-            'msg': 'gridsearch',
-            'name': name,
-            'score': model.best_score_,
-            'time_seconds': model.refit_time_,
-            'ix': int(model.best_index_),
-            'params': model.best_params_
-        }))
+    print(json.dumps({
+        'ts': str(datetime.now()),
+        'msg': 'gridsearch',
+        'name': name,
+        'score': model.best_score_,
+        'time_seconds': model.refit_time_,
+        'ix': int(model.best_index_),
+        'params': model.best_params_
+    }),
+          flush=True)
     pd.DataFrame(model.cv_results_).to_csv(f'Algorithm/Output/{name}.csv')
     if best_model is None or model.best_score_ > best_model.best_score_:
         best_model = model
@@ -95,12 +101,12 @@ for name, (algorithm, param_grid) in ALGORITHMS.items():
 # Make test predictions using the best model and evaluate accuracy.
 y_test_pred = best_model.predict(X_test)
 score = accuracy_score(y_test_2000, y_test_pred[:2000])
-print(
-    json.dumps({
-        'ts': str(datetime.now()),
-        'msg': 'accuracy',
-        'accuracy': score
-    }))
+print(json.dumps({
+    'ts': str(datetime.now()),
+    'msg': 'accuracy',
+    'accuracy': score
+}),
+      flush=True)
 
 # Write test predictions to file.
 with h5py.File('Algorithm/Output/predicted_labels.h5', 'w') as H:
