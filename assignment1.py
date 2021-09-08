@@ -33,7 +33,7 @@ def load_data() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
 
 def preprocess(X: np.ndarray) -> np.ndarray:
     """Do data cleaning, feature extraction etc."""
-    return scale(X)
+    return normalize(X)
     return np.array([
         np.concatenate((x,
                         hog(x.reshape(28, 28),
