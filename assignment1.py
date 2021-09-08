@@ -13,7 +13,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import GridSearchCV
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import normalize, scale
+from sklearn.preprocessing import normalize, minmax_scale
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
@@ -33,7 +33,7 @@ def load_data() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
 
 def preprocess(X: np.ndarray) -> np.ndarray:
     """Do data cleaning, feature extraction etc."""
-    return normalize(X)
+    return minmax_scale(X)
     return np.array([
         np.concatenate((x,
                         hog(x.reshape(28, 28),
