@@ -5,8 +5,8 @@ build/$(STUDENTID)_report.pdf: build/$(STUDENTID)_code.ipynb.pdf build/results.l
 	cp report/report.pdf $@
 
 build/results.log: assignment1.py build
-	mkdir -p Algorithm/Output
-	cd Algorithm && tar xf ../Input.tar.xz
+	mkdir -p Output
+	tar xf Input.tar.xz
 	./assignment1.py | tee $@
 
 build/$(STUDENTID)_code.ipynb.pdf: build/$(STUDENTID)_code.ipynb
@@ -21,4 +21,4 @@ build:
 	mkdir $@
 
 clean:
-	rm -rf Algorithm build/*
+	rm -rf Input Output build/*

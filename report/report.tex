@@ -11,9 +11,9 @@ In this report several image classifiers are benchmarked against a grayscale ima
 \end{abstract}
 
 \section{Introduction}
-Object recognition is one of the biggest subfields of computer vision, with many practical applications such as computer aided diagnosis \cite{doi2007computer}, face detection \cite{hjelmaas2001face}, Optical Character Recognition \cite{mori1999optical} and so on.
+Object recognition is one of the biggest subfields of computer vision, with many practical applications such as computer aided diagnosis~\cite{doi2007computer}, face detection~\cite{hjelmaas2001face}, Optical Character Recognition~\cite{mori1999optical} and so on.
 
-The current state of the art in object recognition is Convolutional Neural Networks \cite{iandola2016squeezenet}. The convolutional neural network takes in the raw pixel data and applies several layers of "convolution" transformations, which aggregate nearby pixels into higher order features in a hierarchical fashion. Prior to the prevalence of GPU based neural network training, the previous state of the art was to apply some hand crafted transformations to the input image to extract higher order features \cite{rybski2010visual}, and then pass the encoded features through a classical machine learning algorithm such as a generalized linear model \cite{ebrahimzadeh2014efficient}.
+The current state of the art in object recognition is Convolutional Neural Networks~\cite{iandola2016squeezenet}. The convolutional neural network takes in the raw pixel data and applies several layers of `convolution' transformations, which aggregate nearby pixels into higher order features in a hierarchical fashion. Prior to the prevalence of GPU based neural network training, the previous state of the art was to apply some hand crafted transformations to the input image to extract higher order features~\cite{rybski2010visual}, and then pass the encoded features through a classical machine learning algorithm such as a generalized linear model~\cite{ebrahimzadeh2014efficient}.
 
 The aim of this study is to compare and contrast several different machine learning algorithms when applied to an object detection problem. This should provide insight into their relative ability to capture the information in the data, with the help of some standard hand crafted feature transformations.
 
@@ -22,11 +22,10 @@ Describe the pre-processing techniques and classifier methods algorithms.
 
 \begin{figure}[ht]
 \includegraphics[width=\linewidth]{../Dataset_image}
-\caption{Grayscale 28x28 images of clothing.}
-\label{fig:images}
+\caption{Grayscale 28\times{}28 images of clothing.}\label{fig:images}
 \end{figure}
 
-Several machine learning algorithms were benchmarked against a corpus of 28x28 grayscale images. Examples of the images can bee seen in figure \ref{fig:images}. There are 10 classes in total:
+Several machine learning algorithms were benchmarked against a corpus of 28\times{}28 grayscale images. Examples of the images can bee seen in figure~\ref{fig:images}. There are 10 classes in total:
 \begin{enumerate}
 \item T-shirt/Top
 \item Trouser
@@ -42,14 +41,14 @@ Several machine learning algorithms were benchmarked against a corpus of 28x28 g
 
 30,000 of these images are used for training and hyperparameter tuning using 10-fold cross-validation, and 2,000 are used as a hold-out set to evaluate the best classifier according to the hyperparameter tuning results.
 
-The performance is evaluated primarily based on top-1 accuracy, as defined in equation \ref{eq:accuracy}:
+The performance is evaluated primarily based on top-1 accuracy, as defined in equation~\ref{eq:accuracy}:
 
 \begin{equation}
 \label{eq:accuracy}
 Accuracy = \frac{\text{Number of correct classifications}}{\text{Total number of test examples used}}
 \end{equation}
 
-The training and inference time cost of each algorithm is also evaluated. The experiment was performed on a 16-inch 2019 MackBook Pro, with a 2.3GHz 8-Core Intel Core i9 and 32 GB 2667 MHz DDR4 RAM.
+The training and inference time cost of each algorithm is also evaluated. The experiment was performed on a 16-inch 2019 MackBook Pro, with a 2.3GHz 8-Core Intel Core i9 and 32 GB 2667 MHz DDR4 RAM\@.
 
 \subsection{Preprocessing}
 A common preprocessing step is applied before doing the hyperparameter grid search across the various algorithms:
@@ -85,6 +84,6 @@ Meaningful conclusion based on results, future work, and improvement suggested.
 \item Dependencies: \texttt{pip3 install h5py pandas scikit-image scikit-learn}
 \item Usage: run the steps in the notebook sequentially to get the tuning and evaluation results.
 \end{itemize}
-Detailed hyperparameter tuning results will be written as csv files to \texttt{Algorithm/Output} for each respective classifier, along with the final predictions as \texttt{Algorithm/Output/predicted\_labels.h5}.
+Detailed hyperparameter tuning results will be written as csv files to \texttt{Output} for each respective classifier, along with the final predictions as \texttt{Output/predicted\_labels.h5}.
 
 \end{document}
