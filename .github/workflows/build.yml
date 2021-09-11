@@ -10,7 +10,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       with: {name: build, path: build}
     - uses: actions/upload-artifact@v2
-      with: {name: Output, path: Algorithm/Output}
+      with: {name: Output, path: Output}
     - uses: marvinpinto/action-automatic-releases@latest
       if: github.ref == 'refs/heads/main'
       with:
@@ -20,4 +20,4 @@ jobs:
           LICENSE
           assignment1.py
           build/*
-          Algorithm/Output/*
+          Output/*
