@@ -6,14 +6,13 @@ import json
 import numpy as np
 import pandas as pd
 from typing import Tuple
-from skimage.feature import hog, local_binary_pattern
+from skimage.feature import hog
 from sklearn.ensemble import AdaBoostClassifier, BaggingClassifier
-from sklearn.linear_model import SGDClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import GridSearchCV
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import normalize, minmax_scale, robust_scale
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
@@ -33,53 +32,43 @@ def load_data() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
 
 def preprocess(X: np.ndarray) -> np.ndarray:
     """Do data cleaning, feature extraction etc."""
-    return X
     return np.array([
-        np.concatenate((x,
-                        hog(x.reshape(28, 28),
-                            pixels_per_cell=(4, 4),
-                            cells_per_block=(2, 2)),
-                        local_binary_pattern(x.reshape(28, 28), 8, 1,
-                                             'uniform').flatten())) for x in X
+        hog(x.reshape(28, 28), orientations=8, pixels_per_cell=(7, 7))
+        for x in X
     ])
-    features = [
-        hog(x.reshape(28, 28),
-            orientations=8,
-            pixels_per_cell=(4, 4),
-            cells_per_block=(3, 3),
-            block_norm='L1-sqrt') for x in X
-    ]
-    return np.concatenate((normalize(X), np.array(features)), axis=1)
 
 
-# Define all the ML algorithms to compare.
+# Define all the ML algorithms to compare. This can be edited to
+# remove combinations, to speed up the script.
 ALGORITHMS = {
-    'SVM': (SVC(C=10, random_state=0), {}),
-    # 'Naive Bayes': (GaussianNB(), {}),
-    # 'SGD': (SGDClassifier(penalty='elasticnet', n_jobs=-1, random_state=0), {
-    #     'loss': ['hinge', 'log'],
-    #     'alpha': [1e-6, 1e-5, 1e-4, 1e-3],
-    #     'l1_ratio': [0, 0.15, 0.5, 1],
-    #     'class_weight': [None, 'balanced']
-    # }),
-    # 'Decision Tree': (DecisionTreeClassifier(random_state=0), {
-    #     'criterion': ['gini', 'entropy'],
-    #     'splitter': ['best', 'random'],
-    #     'ccp_alpha': [0, 0.001, 0.01, 0.1]
-    # }),
-    # 'Nearest Neighbor': (KNeighborsClassifier(n_jobs=-1), {
-    #     'n_neighbors': [2, 4, 8, 16],
-    #     'weights': ['uniform', 'distance'],
-    #     'p': [1, 2]
-    # }),
-    # 'Bagging': (BaggingClassifier(random_state=0, n_jobs=-1), {
-    #     'n_estimators': [2, 4, 8, 16],
-    #     'max_samples': [0.01, 0.1]
-    # }),
-    # 'Ada Boost': (AdaBoostClassifier(random_state=0), {
-    #     'n_estimators': [2, 4, 8, 16],
-    #     'learning_rate': [0.1, 1]
-    # }),
+    'Naive Bayes': (GaussianNB(), {}),
+    'Logistic Regression':
+    (LogisticRegression(solver='saga', n_jobs=-1, random_state=0), {
+        'penalty': ['l1', 'l2'],
+        'C': [0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000]
+    }),
+    'SVM': (SVC(random_state=0), {
+        'kernel': ['linear', 'poly', 'rbf', 'sigmoid'],
+        'C': [1, 10, 100, 1000]
+    }),
+    'Decision Tree': (DecisionTreeClassifier(random_state=0), {
+        'criterion': ['gini', 'entropy'],
+        'splitter': ['best', 'random'],
+        'ccp_alpha': [0, 0.001, 0.01, 0.1]
+    }),
+    'Nearest Neighbor': (KNeighborsClassifier(n_jobs=-1), {
+        'n_neighbors': [2, 4, 8, 16],
+        'weights': ['uniform', 'distance'],
+        'p': [1, 2]
+    }),
+    'Bagging': (BaggingClassifier(random_state=0, n_jobs=-1), {
+        'n_estimators': [2, 4, 8, 16],
+        'max_samples': [0.01, 0.1]
+    }),
+    'Ada Boost': (AdaBoostClassifier(random_state=0), {
+        'n_estimators': [2, 4, 8, 16],
+        'learning_rate': [0.1, 1]
+    }),
 }
 
 # Load and preprocess the data.
