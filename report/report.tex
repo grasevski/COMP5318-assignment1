@@ -78,19 +78,22 @@ The HOG descriptor achieves the following tasks:
 \subsection{Algorithms}
 Several different algorithms are applied in turn to the preprocessed data, and a grid of their hyperparameters are explored. A stratified 10-fold cross validation is performed on each hyperparameter combination and the highest scoring (algorithm, hyperparameter) combination is retrained on the entire training set and evaluated on the test set.
 
+% TODO
+
 \subsubsection{Nearest Neighbor}
 \subsubsection{Logistic Regression}
 \subsubsection{Naive Bayes}
 \subsubsection{Decision Tree}
 \subsubsection{Bagging}
 \subsubsection{Ada Boost}
-\subsubsection{SVM}
+\subsubsection{Support Vector Machine}
 
 \section{Experiments and results}
+% TODO
 Comparing experiment results between different algorithms (using table or graph) and produce a meaningful discussion of results from the experiment and choice of classifier methods (analysis on potential reasons for good performance or bad performance, and for training and inference time consumption).
 
 \section{Conclusion}
-Meaningful conclusion based on results, future work, and improvement suggested.
+Out of the algorithms applied, Support Vector Machine achieved the highest accuracy at the expense of a relatively long training time. Naive Bayes was by far the fastest in both training and inference, due to the efficient time complexity of the algorithm. Further improvements would be to consider convolutional neural networks in order to automatically extract similar features to the HOG descriptor via backpropagation and stochastic gradient descent. Furthermore, GPU acceleration could be utilized to achieve fast training and inference by parallelizing the pixel-wise operations which are very common in computer vision.
 
 \printbibliography\appendix
 \section{Running the code}
