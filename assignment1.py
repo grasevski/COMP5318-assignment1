@@ -34,7 +34,6 @@ def preprocess(X: np.ndarray) -> np.ndarray:
     """Do data cleaning, feature extraction etc."""
     return np.array([
         hog(x.reshape(28, 28),
-            orientations=8,
             pixels_per_cell=(7, 7),
             cells_per_block=(2, 2),
             block_norm='L1',
