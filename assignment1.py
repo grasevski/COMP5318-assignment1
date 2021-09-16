@@ -10,6 +10,7 @@ import pandas as pd
 from typing import Tuple
 from skimage import exposure
 from skimage.feature import hog
+from sklearn.decomposition import PCA
 from sklearn.ensemble import AdaBoostClassifier, BaggingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
@@ -69,9 +70,9 @@ def preprocess(X: np.ndarray) -> np.ndarray:
 
 # Preprocessing hyperparameters.
 HOG_PARAMS = {
-    'pixels_per_cell': (7, 7),
-    'cells_per_block': (2, 2),
-    'block_norm': 'L1',
+    'orientations': 8,
+    'pixels_per_cell': (4, 4),
+    'block_norm': 'L1-sqrt',
     'transform_sqrt': True,
 }
 
@@ -119,6 +120,9 @@ print(json.dumps({
 generate_hog_image(X_train[:3])
 print(json.dumps({'ts': str(datetime.now()), 'msg': 'preprocess'}), flush=True)
 X_train, X_test, best_model = preprocess(X_train), preprocess(X_test), None
+pca = PCA(n_components=128, random_state=0).fit(X_train)
+print(pca.n_components_, flush=True)
+X_train, X_test = pca.transform(X_train), pca.transform(X_test)
 fieldnames = ['ts', 'msg', 'name', 'score', 'time_seconds', 'ix', 'params']
 
 # Run hyperparam tuning on each respective ML algorithm.
