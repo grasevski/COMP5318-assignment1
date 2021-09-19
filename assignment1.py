@@ -121,7 +121,6 @@ generate_hog_image(X_train[:3])
 print(json.dumps({'ts': str(datetime.now()), 'msg': 'preprocess'}), flush=True)
 X_train, X_test, best_model = preprocess(X_train), preprocess(X_test), None
 pca = PCA(n_components=128, random_state=0).fit(X_train)
-print(pca.n_components_, flush=True)
 X_train, X_test = pca.transform(X_train), pca.transform(X_test)
 fieldnames = ['ts', 'msg', 'name', 'score', 'time_seconds', 'ix', 'params']
 
@@ -144,16 +143,20 @@ with open('Output/results.csv', 'w') as f:
             'score': model.best_score_,
             'time_seconds': model.refit_time_,
             'ix': int(model.best_index_),
-            'params': model.best_params_
         }
-        print(json.dumps(results), flush=True)
         wtr.writerow(results)
-        pd.DataFrame(model.cv_results_).to_csv(f'Output/{name}.csv')
+        results['params'] = model.best_params_
+        print(json.dumps(results), flush=True)
+        df = pd.DataFrame(model.cv_results)
+        df.drop(columns='params', inplace=True)
+        df.to_csv(f'Output/{name}.csv')
         if best_model is None or model.best_score_ > best_model.best_score_:
             best_model = model
 
 # Make test predictions using the best model and evaluate accuracy.
+print(json.dumps({'ts': str(datetime.now()), 'msg': 'predict'}), flush=True)
 y_test_pred = best_model.predict(X_test)
+print(json.dumps({'ts': str(datetime.now()), 'msg': 'evaluate'}), flush=True)
 score = accuracy_score(y_test_2000, y_test_pred[:2000])
 print(json.dumps({
     'ts': str(datetime.now()),
