@@ -126,7 +126,7 @@ with open('Output/results.csv', 'w') as f:
         wtr.writerow(results)
         results['params'] = model.best_params_
         print(json.dumps(results), flush=True)
-        df = pd.DataFrame(model.cv_results)
+        df = pd.DataFrame(model.cv_results_)
         df.drop(columns='params', inplace=True)
         df.to_csv(f'Output/{name}.csv')
         if best_model is None or model.best_score_ > best_model.best_score_:
