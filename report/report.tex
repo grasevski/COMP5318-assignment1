@@ -6,10 +6,6 @@
 \pgfplotstableread[col sep=comma]{../Output/Naive Bayes.csv}\naivebayes{}
 \pgfplotstableread[col sep=comma]{../Output/Logistic Regression.csv}\logisticregression{}
 \pgfplotstableread[col sep=comma]{../Output/SVM.csv}\svm{}
-\pgfplotstableread[col sep=comma]{../Output/Decision Tree.csv}\decisiontree{}
-\pgfplotstableread[col sep=comma]{../Output/Nearest Neighbor.csv}\nearestneighbor{}
-\pgfplotstableread[col sep=comma]{../Output/Bagging.csv}\bagging{}
-\pgfplotstableread[col sep=comma]{../Output/Ada Boost.csv}\adaboost{}
 \title{COMP5318 Assignment 1}
 \author{Nicholas Grasevski (ngra5777, 500710654)}
 \begin{document}
@@ -122,9 +118,6 @@ Several different algorithms are applied in turn to the preprocessed data, and a
 
 In real world applications, time and memory are not infinite and the machine learning is bound by the physical limitations of the hardware. Table~\ref{tab:algorithms} shows the computational complexity of the various algorithms.
 
-\subsubsection{Nearest Neighbor}
-
-
 \subsubsection{Logistic Regression}
 Logistic Regression is a generalization of linear regression to estimate the probability of a given class~\cite{wright1995logistic}. It models a probability by applying the softmax function (or sigmoid in the binary case) to a linear model, as in equation~\ref{eq:lr}:
 
@@ -157,25 +150,14 @@ For class $C$, where the evidence $Z=\Pr\left(\textbf{X}\right)=\sum_k{\Pr\left(
 
 This simple formulation makes training Naive Bayes very computationally efficient and also easily parallelizable, thanks to the conditional independence assumption. However, the assumption rarely holds in practise, leading to poor performance compared to more sophisticated techniques.
 
-\subsubsection{Decision Tree}
-\subsubsection{Bagging}
-\subsubsection{Ada Boost}
-
 \subsubsection{Support Vector Machine}
-Support Vector Machine is a supervised learning algorithm which produces a non-probabilistic classifier, attempting to separate the classes by a set of hyperplanes. It can be used as a linear classifier, or for any nonlinear `kernel' satisfying Mercer's condition~\cite{noble2006support}. This gives it more predictive power compared to Naive Bayes (which can only predict based on statistically independent variables) and Logistic Regression (which can only predict a linear decision boundary). However the additional power afforded by nonlinearity comes at a cost, as the resultant optimization problem must be solved using a quadratic programming algorithm such as coordinate descent, which typically has cubic time complexity. Furthermore the inference time can be an order of magnitude slower compared to Naive Bayes and Logistic Regression. More than one weight vector is required, and the number of weight vectors required is proportional to the size of the input data.
+Support Vector Machine is a supervised learning algorithm which produces a non-probabilistic classifier, attempting to separate the classes by a set of hyperplanes. It can be used as a linear classifier, or for any nonlinear `kernel' satisfying Mercer's condition~\cite{noble2006support}.
+
+This gives it more predictive power compared to Naive Bayes (which can only predict based on statistically independent variables) and Logistic Regression (which can only predict a linear decision boundary). However the additional power afforded by nonlinearity comes at a cost, as the resultant optimization problem must be solved using a quadratic programming algorithm such as coordinate descent, which typically has cubic time complexity.
+
+Furthermore the inference time can be an order of magnitude slower compared to Naive Bayes and Logistic Regression. More than one weight vector is required, and the number of weight vectors required is proportional to the size of the input data.
 
 \section{Experiments and results}
-\begin{table}
-	\pgfplotstabletypeset[
-	columns={name,score,time_seconds},
-	columns/name/.style={string type,column name=Model},
-	columns/score/.style={multiply by=100,column name={CV Acc\%}},
-	columns/time_seconds/.style={column name={Training Time (s)}},
-	every head row/.style={after row=\toprule},
-	]{\results}
-	\caption{Comparison of machine learning algorithms.}\label{tab:results}
-\end{table}
-
 \begin{figure}
 	\begin{tikzpicture}
 		\begin{axis}[
@@ -207,33 +189,26 @@ Support Vector Machine is a supervised learning algorithm which produces a non-p
 			\addplot table[x expr=\coordindex, y expr=\thisrow{time_seconds}]{\results};
 		\end{axis}
 	\end{tikzpicture}
-	\caption{Comparison of cross validation accuracy.}\label{fig:time}
+	\caption{Comparison of training time.}\label{fig:time}
 \end{figure}
+
+\begin{table}
+	\pgfplotstabletypeset[
+	columns={name,score,time_seconds},
+	columns/name/.style={string type,column name=Model},
+	columns/score/.style={multiply by=100,column name={CV Acc\%}},
+	columns/time_seconds/.style={column name={Training Time (s)}},
+	every head row/.style={after row=\toprule},
+	]{\results}
+	\caption{Comparison of machine learning algorithms.}\label{tab:results}
+\end{table}
 
 As can be seen in table~\ref{tab:results}, there is a tradeoff between training speed and accuracy. Naive Bayes is by far the fastest to train, but does not achieve great accuracy. SVM is the slowest to train, but is highly accurate by comparison. Logistic Regression is slow to train, but notably has similar inference speed to Naive Bayes, due to the same algorithmic complexity during inference.
 
 Although naive bayes has the lowest accuracy, it is still decent. This is testament to the effectiveness of the feature engineering and preprocessing that was done to normalize the data and extract meaningful independent features.
 
 
-\subsubsection{Nearest Neighbor}
-\begin{table*}
-	\pgfplotstabletypeset[
-	columns={param_n_neighbors,param_p,mean_test_score,std_test_score,mean_fit_time,std_fit_time,mean_score_time,std_score_time},
-	columns/param_n_neighbors/.style={column name=k},
-	columns/param_p/.style={column name=p},
-	columns/mean_test_score/.style={multiply by=100,column name={Acc\%}},
-	columns/std_test_score/.style={multiply by=100,column name=STD},
-	columns/mean_fit_time/.style={column name={Fit Time (s)}},
-	columns/std_fit_time/.style={column name=STD},
-	columns/mean_score_time/.style={column name={Score Time (s)}},
-	columns/std_score_time/.style={column name=STD},
-	every head row/.style={after row=\toprule},
-	]{\nearestneighbor}
-	\caption{Nearest Neighbor cross validation results.}\label{tab:nearestneighbor}
-\end{table*}
-
-
-\subsubsection{Logistic Regression}
+\subsection{Logistic Regression}
 \begin{table*}
 	\pgfplotstabletypeset[
 	columns={param_C,param_penalty,mean_test_score,std_test_score,mean_fit_time,std_fit_time,mean_score_time,std_score_time},
@@ -258,7 +233,7 @@ As per table~\ref{tab:logisticregression}, two parameters were tuned for logisti
 \end{description}
 
 
-\subsubsection{Naive Bayes}
+\subsection{Naive Bayes}
 \begin{table*}
 	\pgfplotstabletypeset[
 	columns={mean_test_score,std_test_score,mean_fit_time,std_fit_time,mean_score_time,std_score_time},
@@ -276,62 +251,7 @@ As per table~\ref{tab:logisticregression}, two parameters were tuned for logisti
 Being a simple algorithm, no hyperparameters were tuned for Naive Bayes. As per table~\ref{tab:naivebayes}, Both training and inference time were infinitesimal, thanks to the linear time complexity of the algorithm.
 
 
-\subsubsection{Decision Tree}
-\begin{table*}
-	\pgfplotstabletypeset[
-	columns={param_ccp_alpha,param_criterion,mean_test_score,std_test_score,mean_fit_time,std_fit_time,mean_score_time,std_score_time},
-	columns/param_ccp_alpha/.style={column name={$\alpha$}},
-	columns/param_criterion/.style={string type,column name=Criterion},
-	columns/param_splitter/.style={string type,column name=Splitter},
-	columns/mean_test_score/.style={multiply by=100,column name={Acc\%}},
-	columns/std_test_score/.style={multiply by=100,column name=STD},
-	columns/mean_fit_time/.style={column name={Fit Time (s)}},
-	columns/std_fit_time/.style={column name=STD},
-	columns/mean_score_time/.style={column name={Score Time (s)}},
-	columns/std_score_time/.style={column name=STD},
-	every head row/.style={after row=\toprule},
-	]{\decisiontree}
-	\caption{Decision Tree cross validation results.}\label{tab:decisiontree}
-\end{table*}
-
-
-\subsubsection{Bagging}
-\begin{table*}
-	\pgfplotstabletypeset[
-	columns={param_max_samples,param_n_estimators,mean_test_score,std_test_score,mean_fit_time,std_fit_time,mean_score_time,std_score_time},
-	columns/param_max_samples/.style={multiply by=100,column name={Sample\%}},
-	columns/param_n_estimators/.style={string type,column name=n},
-	columns/mean_test_score/.style={multiply by=100,column name={Acc\%}},
-	columns/std_test_score/.style={multiply by=100,column name=STD},
-	columns/mean_fit_time/.style={column name={Fit Time (s)}},
-	columns/std_fit_time/.style={column name=STD},
-	columns/mean_score_time/.style={column name={Score Time (s)}},
-	columns/std_score_time/.style={column name=STD},
-	every head row/.style={after row=\toprule},
-	]{\bagging}
-	\caption{Bagging cross validation results.}\label{tab:bagging}
-\end{table*}
-
-
-\subsubsection{Ada Boost}
-\begin{table*}
-	\pgfplotstabletypeset[
-	columns={param_learning_rate,param_n_estimators,mean_test_score,std_test_score,mean_fit_time,std_fit_time,mean_score_time,std_score_time},
-	columns/param_learning_rate/.style={multiply by=100,column name={$\lambda$}},
-	columns/param_n_estimators/.style={string type,column name=n},
-	columns/mean_test_score/.style={multiply by=100,column name={Acc\%}},
-	columns/std_test_score/.style={multiply by=100,column name=STD},
-	columns/mean_fit_time/.style={column name={Fit Time (s)}},
-	columns/std_fit_time/.style={column name=STD},
-	columns/mean_score_time/.style={column name={Score Time (s)}},
-	columns/std_score_time/.style={column name=STD},
-	every head row/.style={after row=\toprule},
-	]{\adaboost}
-	\caption{Ada Boost cross validation results.}\label{tab:adaboost}
-\end{table*}
-
-
-\subsubsection{Support Vector Machine}
+\subsection{Support Vector Machine}
 \begin{table*}
 	\pgfplotstabletypeset[
 	columns={param_C,param_kernel,mean_test_score,std_test_score,mean_fit_time,std_fit_time,mean_score_time,std_score_time},

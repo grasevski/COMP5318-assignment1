@@ -11,14 +11,11 @@ from typing import Tuple
 from skimage import exposure
 from skimage.feature import hog
 from sklearn.decomposition import PCA
-from sklearn.ensemble import AdaBoostClassifier, BaggingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import GridSearchCV
 from sklearn.naive_bayes import GaussianNB
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
-from sklearn.tree import DecisionTreeClassifier
 
 
 def load_data() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -88,24 +85,6 @@ ALGORITHMS = {
     'SVM': (SVC(random_state=0), {
         'kernel': ['linear', 'poly', 'rbf', 'sigmoid'],
         'C': [1, 10, 100, 1000]
-    }),
-    'Decision Tree': (DecisionTreeClassifier(random_state=0), {
-        'criterion': ['gini', 'entropy'],
-        'splitter': ['best', 'random'],
-        'ccp_alpha': [0, 0.001, 0.01, 0.1]
-    }),
-    'Nearest Neighbor': (KNeighborsClassifier(n_jobs=-1), {
-        'n_neighbors': [2, 4, 8, 16],
-        'weights': ['uniform', 'distance'],
-        'p': [1, 2]
-    }),
-    'Bagging': (BaggingClassifier(random_state=0, n_jobs=-1), {
-        'n_estimators': [2, 4, 8, 16],
-        'max_samples': [0.01, 0.1]
-    }),
-    'Ada Boost': (AdaBoostClassifier(random_state=0), {
-        'n_estimators': [2, 4, 8, 16],
-        'learning_rate': [0.1, 1]
     }),
 }
 
