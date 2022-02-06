@@ -11,11 +11,12 @@ from typing import Tuple
 from skimage import exposure
 from skimage.feature import hog
 from sklearn.decomposition import PCA
-from sklearn.linear_model import LogisticRegression
+# from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import GridSearchCV
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
+import time
 
 
 def load_data() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -61,7 +62,7 @@ def generate_hog_image(X: np.ndarray) -> None:
 
 
 def preprocess(X: np.ndarray) -> np.ndarray:
-    """Do data cleaning, feature extraction etc."""
+    """Clean data and extract features."""
     return np.array([hog(to_image(x), **HOG_PARAMS) for x in X])
 
 
@@ -77,34 +78,54 @@ HOG_PARAMS = {
 # remove combinations, to speed up the script.
 ALGORITHMS = {
     'Naive Bayes': (GaussianNB(), {}),
-    'Logistic Regression':
-    (LogisticRegression(solver='saga', n_jobs=-1, random_state=0), {
-        'penalty': ['l1', 'l2'],
-        'C': [0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000]
-    }),
     'SVM': (SVC(random_state=0), {
-        'kernel': ['linear', 'poly', 'rbf', 'sigmoid'],
-        'C': [1, 10, 100, 1000]
+        'kernel': ['rbf'],
+        'C': [10]
     }),
+    # 'Logistic Regression':
+    # (LogisticRegression(solver='saga', n_jobs=-1, random_state=0), {
+    #     'penalty': ['l1', 'l2'],
+    #     'C': [0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000]
+    # }),
+    # 'SVM': (SVC(random_state=0), {
+    #     'kernel': ['linear', 'poly', 'rbf', 'sigmoid'],
+    #     'C': [1, 10, 100, 1000]
+    # }),
 }
 
-# Load and preprocess the data.
+# Load the data.
 print(json.dumps({'ts': str(datetime.now()), 'msg': 'load_data'}), flush=True)
 X_train, y_train, X_test, y_test_2000 = load_data()
+
+# Generate example preprocessed image and save in Output directory.
 print(json.dumps({
     'ts': str(datetime.now()),
     'msg': 'generate_hog_image'
 }),
       flush=True)
 generate_hog_image(X_train[:3])
+
+# Preprocessing.
 print(json.dumps({'ts': str(datetime.now()), 'msg': 'preprocess'}), flush=True)
-X_train, X_test, best_model = preprocess(X_train), preprocess(X_test), None
+t0 = time.time()
+X_train, X_test = preprocess(X_train), preprocess(X_test)
 pca = PCA(n_components=128, random_state=0).fit(X_train)
 X_train, X_test = pca.transform(X_train), pca.transform(X_test)
-fieldnames = ['ts', 'msg', 'name', 'score', 'time_seconds', 'ix', 'params']
+time_seconds = time.time() - t0
+print(json.dumps({
+    'ts': str(datetime.now()),
+    'msg': 'preprocess_done',
+    'time_seconds': time_seconds
+}),
+      flush=True)
 
-# Run hyperparam tuning on each respective ML algorithm.
+# Evaluate each respective ML algorithm.
 print(json.dumps({'ts': str(datetime.now()), 'msg': 'tuning'}), flush=True)
+fieldnames = [
+    'ts', 'msg', 'name', 'test_acc', 'cv_acc', 'fit_time_seconds',
+    'inf_time_seconds', 'ix'
+]
+best, top = None, -np.inf
 with open('Output/results.csv', 'w') as f:
     wtr = csv.DictWriter(f, fieldnames=fieldnames)
     wtr.writeheader()
@@ -115,12 +136,20 @@ with open('Output/results.csv', 'w') as f:
                              n_jobs=-1,
                              cv=10)
         model.fit(X_train, y_train)
+        t0 = time.time()
+        y_test_pred = model.predict(X_test)
+        inf_time_seconds = time.time() - t0
+        acc = accuracy_score(y_test_2000, y_test_pred[:2000])
+        if acc > top:
+            best, top = y_test_pred, acc
         results = {
             'ts': str(datetime.now()),
             'msg': 'gridsearch',
             'name': name,
-            'score': model.best_score_,
-            'time_seconds': model.refit_time_,
+            'test_acc': acc,
+            'cv_acc': model.best_score_,
+            'fit_time_seconds': model.refit_time_,
+            'inf_time_seconds': inf_time_seconds,
             'ix': int(model.best_index_),
         }
         wtr.writerow(results)
@@ -129,21 +158,7 @@ with open('Output/results.csv', 'w') as f:
         df = pd.DataFrame(model.cv_results_)
         df.drop(columns='params', inplace=True)
         df.to_csv(f'Output/{name}.csv')
-        if best_model is None or model.best_score_ > best_model.best_score_:
-            best_model = model
-
-# Make test predictions using the best model and evaluate accuracy.
-print(json.dumps({'ts': str(datetime.now()), 'msg': 'predict'}), flush=True)
-y_test_pred = best_model.predict(X_test)
-print(json.dumps({'ts': str(datetime.now()), 'msg': 'evaluate'}), flush=True)
-score = accuracy_score(y_test_2000, y_test_pred[:2000])
-print(json.dumps({
-    'ts': str(datetime.now()),
-    'msg': 'accuracy',
-    'accuracy': score
-}),
-      flush=True)
 
 # Write test predictions to file.
 with h5py.File('Output/predicted_labels.h5', 'w') as H:
-    H.create_dataset('Output', data=y_test_pred)
+    H.create_dataset('Output', data=best)

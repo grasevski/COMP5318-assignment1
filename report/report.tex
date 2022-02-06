@@ -161,47 +161,55 @@ Furthermore the inference time can be an order of magnitude slower compared to N
 \begin{figure}
 	\begin{tikzpicture}
 		\begin{axis}[
-			title={CV Accuracy},
+			title={Accuracy},
 			ybar, nodes near coords,
+			legend style={legend pos={outer north east}},
 			xlabel={Model},
 			xtick=data,
 			xticklabels from table={\results}{name},
 			x tick label style={rotate=90,anchor=east},
-			ylabel={CV Accuracy (\%)}
+			ylabel={Accuracy (\%)}
 			]
-			\addplot table[x expr=\coordindex, y expr=100*\thisrow{score}]{\results};
+			\addplot table[x expr=\coordindex, y expr=100*\thisrow{test_acc}]{\results};
+			\addplot table[x expr=\coordindex, y expr=100*\thisrow{cv_acc}]{\results};
+			\legend{Test,CV}
 		\end{axis}
 	\end{tikzpicture}
-	\caption{Comparison of cross validation accuracy.}\label{fig:accuracy}
+	\caption{Comparison of accuracy.}\label{fig:accuracy}
 \end{figure}
 
 \begin{figure}
 	\begin{tikzpicture}
 		\begin{axis}[
-			title={Training Time},
+			title={Time},
 			ybar, nodes near coords,
+			legend style={legend pos={outer north east}},
 			xlabel={Model},
 			xtick=data,
 			xticklabels from table={\results}{name},
 			x tick label style={rotate=90,anchor=east},
-			ylabel={Training Time (s)}
+			ylabel={Time (s)}
 			]
-			\addplot table[x expr=\coordindex, y expr=\thisrow{time_seconds}]{\results};
+			\addplot table[x expr=\coordindex, y expr=\thisrow{fit_time_seconds}]{\results};
+			\addplot table[x expr=\coordindex, y expr=\thisrow{inf_time_seconds}]{\results};
+			\legend{Fit,Predict}
 		\end{axis}
 	\end{tikzpicture}
-	\caption{Comparison of training time.}\label{fig:time}
+	\caption{Comparison of time.}\label{fig:time}
 \end{figure}
 
-\begin{table}
+\begin{table*}
 	\pgfplotstabletypeset[
-	columns={name,score,time_seconds},
+	columns={name,test_acc,cv_acc,fit_time_seconds,inf_time_seconds},
 	columns/name/.style={string type,column name=Model},
-	columns/score/.style={multiply by=100,column name={CV Acc\%}},
-	columns/time_seconds/.style={column name={Training Time (s)}},
+	columns/test_acc/.style={multiply by=100,column name={Test Acc\%}},
+	columns/cv_acc/.style={multiply by=100,column name={CV Acc\%}},
+	columns/fit_time_seconds/.style={column name={Fit Time (s)}},
+	columns/inf_time_seconds/.style={column name={Inf Time (s)}},
 	every head row/.style={after row=\toprule},
 	]{\results}
 	\caption{Comparison of machine learning algorithms.}\label{tab:results}
-\end{table}
+\end{table*}
 
 As can be seen in table~\ref{tab:results}, there is a tradeoff between training speed and accuracy. Naive Bayes is by far the fastest to train, but does not achieve great accuracy. SVM is the slowest to train, but is highly accurate by comparison. Logistic Regression is slow to train, but notably has similar inference speed to Naive Bayes, due to the same algorithmic complexity during inference.
 
